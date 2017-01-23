@@ -1,7 +1,7 @@
-require "bitwise_column/version"
-require "bitwise_column/i18n_handler"
-require "bitwise_column/core"
-require "bitwise_column/core_map"
+require 'bitwise_column/version'
+require 'bitwise_column/i18n_handler'
+require 'bitwise_column/core'
+require 'bitwise_column/core_map'
 
 module BitwiseColumn
   def self.included(base)

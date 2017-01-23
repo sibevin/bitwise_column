@@ -1,5 +1,22 @@
-require 'active_record'
 
+require 'active_model'
+require 'action_controller'
+require 'action_view'
+ActionView::RoutingUrlFor.send(:include, ActionDispatch::Routing::UrlFor)
+require 'action_view/template'
+require 'action_view/test_case'
+module Rails
+  def self.env
+    ActiveSupport::StringInquirer.new("test")
+  end
+end
+if ActiveSupport::TestCase.respond_to?(:test_order=)
+  ActiveSupport::TestCase.test_order = :random
+end
+require 'simple_form'
+
+
+require 'active_record'
 silence_warnings do
   ActiveRecord::Migration.verbose = false
   ActiveRecord::Base.logger = Logger.new(nil)
@@ -24,6 +41,8 @@ class User < ActiveRecord::Base
 end
 
 describe BitwiseColumn do
+  include SimpleForm::ActionViewExtensions::FormHelper
+
   describe "#<<" do
     it 'renders multiple select with selected enumerized value' do
       u = User.new
