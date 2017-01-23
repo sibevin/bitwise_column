@@ -69,6 +69,18 @@ describe BitwiseColumn::Core do
       core.assign(u, :invalid_role).must_equal 8
       core.assign(u, "invalid_role").must_equal 8
     end
+
+    it "should return 0 if given bitwise value is nil" do
+      u = User2.new(role: 8)
+      core = BitwiseColumn::Core.new(col_name: :role, bitwise_map: ROLE_MAP)
+      core.assign(u, nil).must_equal 0
+    end
+
+    it "should return 0 if given bitwise value is an empty array" do
+      u = User2.new(role: 8)
+      core = BitwiseColumn::Core.new(col_name: :role, bitwise_map: ROLE_MAP)
+      core.assign(u, []).must_equal 0
+    end
   end
 
   describe "#have?" do

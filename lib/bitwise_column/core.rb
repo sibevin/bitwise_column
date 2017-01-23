@@ -23,7 +23,9 @@ module BitwiseColumn
     def assign(target_klass, values)
       values = symbolize(values)
       bitwise_vals = read_col(target_klass)
-      if values.is_a?(Array)
+      if values.nil?
+        bitwise_vals = []
+      elsif values.is_a?(Array)
         bitwise_vals = values
       else
         bitwise_vals = [values.to_sym]
@@ -84,6 +86,7 @@ module BitwiseColumn
     end
 
     def symbolize(values)
+      return nil if values.nil?
       values.is_a?(Array) ? values.map(&:to_sym) : values.to_sym
     end
 
@@ -109,14 +112,15 @@ module BitwiseColumn
 
     def col_to_bitwise_value(col_val)
       result = []
-      @map.each do |bit_key, bit_value|
-        result << bit_key if (col_val & 2**(bit_value - 1)) != 0
+      unless col_val.nil?
+        @map.each do |bit_key, bit_value|
+          result << bit_key if (col_val & 2**(bit_value - 1)) != 0
+        end
       end
       result
     end
 
     def bitwise_to_col_value(bitwise_val)
-      valid?(bitwise_val)
       result = 0
       bitwise_val.each do |bv|
         result |= 2**(@map[bv] - 1) if @map[bv]

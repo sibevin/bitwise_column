@@ -27,12 +27,14 @@ First, add an integer column to your model with a migration:
 ```
 class AddRoleToUsers < ActiveRecord::Migration
   def change
-    add_column :users, :role, :integer, null: false, default: 0
+    add_column :users, :role, :integer
   end
 end
 ```
 
-Include BitwiseColumn module in your model and call bitwise_column to setup the bitwise mapping:
+Although bitwise column treats nil as 0, but we suggest using 0 for consistence. To do that, you may add `null: false` and `default: 0` options if needed.
+
+Next, include BitwiseColumn module in your model and call bitwise_column to setup the bitwise mapping:
 
 ```
 class User < ActiveRecord::Base
@@ -45,11 +47,11 @@ class User < ActiveRecord::Base
 end
 ```
 
-Then, you would have a virtual column `role_bitwise` to access the bitwise values:
+Then, you will have a virtual column `role_bitwise` to access the bitwise values:
 
 ```
 user = User.new
-user.role # 0
+user.role # nil
 user.role_bitwise # []
 
 # Assign bitwise values with the virtual column "role_bitwise", the role column is updated at the same time.
@@ -67,11 +69,17 @@ user.role_bitwise # [:member, :manger]
 user.role_bitwise = ['admin', 'member']
 user.role # 5
 user.role_bitwise # [:member, :admin]
+user.role_bitwise = []
+user.role # 0
+user.role_bitwise # []
 
 # You can change the original integer column directly, the role_bitwise is updated at the same time.
 user.role = 7
 user.role # 7
 user.role_bitwise # [:member, :manager, :admin]
+user.role = 0
+user.role # 0
+user.role_bitwise # []
 
 # Use _bitwise_have? to check the given keys are included or not.
 user.role_bitwise = [:member, :manger]
@@ -119,10 +127,6 @@ class Admin
     finance: 4,
     marketing: 5
   }
-
-  def initialize(role:0)
-    @role = role
-  end
 end
 ```
 
@@ -159,7 +163,7 @@ user.role_bitwise = [:member, :admin]
 user.role_bitwise_text # ["成員", "最高管理員"]
 ```
 
-If locale is given, the class method `input_options` would use the translated text:
+If the locale is given, the class method `input_options` would use the translated text:
 
 ```
 User.bitwise_column.role.input_options # [["成員", "member"], ["管理人員", "manager"], ["最高管理員", "admin"]]

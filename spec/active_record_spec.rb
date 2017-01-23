@@ -81,6 +81,18 @@ describe BitwiseColumn do
       u.role_bitwise = "invalid_role"
       u.role.must_equal 8
     end
+
+    it 'should assign 0 to col value if given bitwise value is nil' do
+      u = User.new(role: 1)
+      u.role_bitwise = nil
+      u.role.must_equal 0
+    end
+
+    it 'should return 0 to col value if given bitwise value is an empty array' do
+      u = User.new(role: 1)
+      u.role_bitwise = []
+      u.role.must_equal 0
+    end
   end
 
   describe "#have?" do
@@ -106,6 +118,18 @@ describe BitwiseColumn do
       u.role_bitwise.must_equal [:member, :manager, :admin]
       u.role = 12
       u.role_bitwise.must_equal [:admin, :finance]
+    end
+
+    it "should return empty array if column value is nil" do
+      u = User.new
+      u.role = nil
+      u.role_bitwise.must_equal []
+    end
+
+    it "should return empty array if column value is 0" do
+      u = User.new
+      u.role = 0
+      u.role_bitwise.must_equal []
     end
   end
 end
