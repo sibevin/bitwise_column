@@ -87,12 +87,14 @@ describe BitwiseColumn do
     it "should check a single value is included" do
       u = User.new(role: 5) # [:admin, :member]
       u.role_bitwise_have?(:admin).must_equal true
+      u.role_bitwise_have?('member').must_equal true
       u.role_bitwise_have?(:manager).must_equal false
     end
 
     it "should check given values are all included" do
       u = User.new(role: 13) # [:admin, :member, :finance]
       u.role_bitwise_have?([:admin, :finance]).must_equal true
+      u.role_bitwise_have?(['member', 'admin']).must_equal true
       u.role_bitwise_have?([:manager, :admin]).must_equal false
     end
   end
