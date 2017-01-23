@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.version       = BitwiseColumn::VERSION
   spec.authors       = ['Sibevin Wang']
   spec.email         = ['sibevin@gmail.com']
-  spec.summary       = 'Using bitwise to store multiple values in a single column.'
+  spec.summary       = 'Using bitwise format to store multiple values in a single integer column.'
   spec.homepage      = 'https://github.com/sibevin/bitwise_column'
   spec.license       = 'MIT'
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
