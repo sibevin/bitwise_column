@@ -100,15 +100,15 @@ user.role_bitwise # [:member, :admin]
 Beside, some class methods are also provided:
 
 ```
-User.bitwise_column.role.to_key(3) # [:member, :manager]
-User.bitwise_column.role.to_value(:admin) # 4
-User.bitwise_column.role.to_value([:member, :admin]) # 5
-User.bitwise_column.role.mapping # { member: 1, manager: 2, admin: 3 }
-User.bitwise_column.role.keys # [:member, :manager, :admin]
+User.role_bitwise.to_bitwise(3) # [:member, :manager]
+User.role_bitwise.to_column(:admin) # 4
+User.role_bitwise.to_column([:member, :admin]) # 5
+User.role_bitwise.mapping # { member: 1, manager: 2, admin: 3 }
+User.role_bitwise.keys # [:member, :manager, :admin]
 
-User.bitwise_column.role.input_options # [["Member", "member"], ["Manager", "manager"], ["Admin", "admin"]]
-User.bitwise_column.role.input_options(only: [:member, :admin]) # [["Member", "member"], ["Admin", "admin"]]
-User.bitwise_column.role.input_options(except: [:member]) # [["Manager", "manager"], ["Admin", "admin"]]
+User.role_bitwise.input_options # [["Member", "member"], ["Manager", "manager"], ["Admin", "admin"]]
+User.role_bitwise.input_options(only: [:member, :admin]) # [["Member", "member"], ["Admin", "admin"]]
+User.role_bitwise.input_options(except: [:member]) # [["Manager", "manager"], ["Admin", "admin"]]
 ```
 
 ### Pure ruby class
@@ -151,7 +151,7 @@ zh-TW:
       role:
         member: '成員'
         manager: '管理人員'
-        admin: '最高管理員'
+        admin: '系統管理員'
 ```
 
 When locale files are ready, you can use `_bitwise_text` to display the translated text:
@@ -160,7 +160,7 @@ When locale files are ready, you can use `_bitwise_text` to display the translat
 user.role_bitwise = :member
 user.role_bitwise_text # ["成員"]
 user.role_bitwise = [:member, :admin]
-user.role_bitwise_text # ["成員", "最高管理員"]
+user.role_bitwise_text # ["成員", "系統管理員"]
 ```
 
 If the locale is given, the class method `input_options` would use the translated text:

@@ -2,21 +2,21 @@ ROLE_LOCALE = {
   bitwise_column: {
     user3: {
       role: {
-        member: "User Member"
+        member: 'User Member'
       }
     }
   },
   activerecord: {
     attributes: {
       user3: {
-        :'role/manager' => "User Manager"
+        'role/manager': 'User Manager'
       }
     }
   },
   activemodel: {
     attributes: {
       user3: {
-        :'role/admin' => "User Admin"
+        'role/admin': 'User Admin'
       }
     }
   }
@@ -35,16 +35,16 @@ describe BitwiseColumn::I18nHandler do
     I18n.default_locale = :en
   end
 
-  describe "#translate" do
-    TEST_CASES = {
-      member: "User Member",
-      manager: "User Manager",
-      admin: "User Admin",
-      customer_service: "Customer_service",
-    }
-    it "should find the locale with given column name" do
+  describe '#translate' do
+    it 'should find the locale with given column name' do
+      test_cases = {
+        member: 'User Member',
+        manager: 'User Manager',
+        admin: 'User Admin',
+        customer_service: 'Customer Service'
+      }
       handler = BitwiseColumn::I18nHandler.new(User3, 'role')
-      TEST_CASES.each do |role, result|
+      test_cases.each do |role, result|
         handler.translate(role).must_equal(result)
       end
     end

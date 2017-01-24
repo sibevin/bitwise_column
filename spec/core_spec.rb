@@ -10,103 +10,101 @@ ROLE_MAP = {
   manager: 2,
   admin: 3,
   finance: 4,
-  marketing: 5,
-  tester: 7
+  marketing: 5
 }
 
 describe BitwiseColumn::Core do
-  describe "#col" do
-    it "should return col name" do
-      core = BitwiseColumn::Core.new(col_name: :role, bitwise_map: ROLE_MAP)
-      core.col.must_equal :role
+  before do
+    @i18n_handler = BitwiseColumn::I18nHandler.new(User2, :role)
+    @core = BitwiseColumn::Core.new(col_name: :role, bitwise_map: ROLE_MAP, i18n_handler: @i18n_handler)
+  end
+
+  describe '#col' do
+    it 'should return col name' do
+      @core.col.must_equal :role
     end
   end
 
-  describe "#append" do
-    it "should append multiple values" do
-      u = User2.new(role: 8)
-      core = BitwiseColumn::Core.new(col_name: :role, bitwise_map: ROLE_MAP)
-      core.append(u, [:member, "marketing", :admin]).must_equal 29
-      core.append(u, [:manager, "admin"]).must_equal 14
+  describe '#have?' do
+    it 'should check a single value is included' do
+      @core.have?([:admin, :member], :admin).must_equal true
+      @core.have?([:admin, :member], :manager).must_equal false
     end
 
-    it "should append a single value" do
-      u = User2.new(role: 1)
-      core = BitwiseColumn::Core.new(col_name: :role, bitwise_map: ROLE_MAP)
-      core.append(u, :admin).must_equal 5
-      core.append(u, :member).must_equal 1
-      core.append(u, "finance").must_equal 9
-    end
-
-    it "should return original col value if given bitwise value is invalid" do
-      u = User2.new(role: 8)
-      core = BitwiseColumn::Core.new(col_name: :role, bitwise_map: ROLE_MAP)
-      core.append(u, :invalid_role).must_equal 8
-      core.append(u, "invalid_role").must_equal 8
+    it 'should check given values are all included' do
+      @core.have?([:admin, :member, :finance], [:admin, :finance]).must_equal true
+      @core.have?([:admin, :member, :finance], [:manager, :admin]).must_equal false
     end
   end
 
-  describe "#assign" do
-    it "should assign mulitple values" do
-      u = User2.new(role: 8)
-      core = BitwiseColumn::Core.new(col_name: :role, bitwise_map: ROLE_MAP)
-      core.assign(u, [:admin, "member", :admin]).must_equal 5
-      core.assign(u, [:member]).must_equal 1
-      core.assign(u, [:admin, "finance"]).must_equal 12
-    end
-
-    it "should assign a single value" do
-      u = User2.new(role: 1)
-      core = BitwiseColumn::Core.new(col_name: :role, bitwise_map: ROLE_MAP)
-      core.assign(u, :admin).must_equal 4
-      core.assign(u, :member).must_equal 1
-      core.assign(u, "finance").must_equal 8
-    end
-
-    it "should return original col value if given bitwise value is invalid" do
-      u = User2.new(role: 8)
-      core = BitwiseColumn::Core.new(col_name: :role, bitwise_map: ROLE_MAP)
-      core.assign(u, :invalid_role).must_equal 8
-      core.assign(u, "invalid_role").must_equal 8
-    end
-
-    it "should return 0 if given bitwise value is nil" do
-      u = User2.new(role: 8)
-      core = BitwiseColumn::Core.new(col_name: :role, bitwise_map: ROLE_MAP)
-      core.assign(u, nil).must_equal 0
-    end
-
-    it "should return 0 if given bitwise value is an empty array" do
-      u = User2.new(role: 8)
-      core = BitwiseColumn::Core.new(col_name: :role, bitwise_map: ROLE_MAP)
-      core.assign(u, []).must_equal 0
+  describe '#keys' do
+    it 'should return the bitwise keys' do
+      @core.keys.must_equal ROLE_MAP.keys
     end
   end
 
-  describe "#have?" do
-    it "should check a single value is included" do
-      u = User2.new(role: 5) # [:admin, :member]
-      core = BitwiseColumn::Core.new(col_name: :role, bitwise_map: ROLE_MAP)
-      core.have?(u, :admin).must_equal true
-      core.have?(u, :manager).must_equal false
-    end
-
-    it "should check given values are all included" do
-      u = User2.new(role: 13) # [:admin, :member, :finance]
-      core = BitwiseColumn::Core.new(col_name: :role, bitwise_map: ROLE_MAP)
-      core.have?(u, [:admin, :finance]).must_equal true
-      core.have?(u, [:manager, :admin]).must_equal false
+  describe '#mapping' do
+    it 'should return the bitwise mapping' do
+      @core.mapping.must_equal ROLE_MAP
     end
   end
 
-  describe "#bitwise_value" do
-    it "should return bitwise value" do
-      u = User2.new
-      core = BitwiseColumn::Core.new(col_name: :role, bitwise_map: ROLE_MAP)
-      u.role = 7
-      core.bitwise_value(u).must_equal [:member, :manager, :admin]
-      u.role = 12
-      core.bitwise_value(u).must_equal [:admin, :finance]
+  describe '#to_bitwise' do
+    it 'should return the bitwise value with the given column value' do
+      @core.to_bitwise(7).must_equal [:member, :manager, :admin]
+      @core.to_bitwise(12).must_equal [:admin, :finance]
+      @core.to_bitwise(0).must_equal []
+      @core.to_bitwise(nil).must_equal []
+    end
+  end
+
+  describe '#to_column' do
+    it 'should return the column value with the given bitwise value' do
+      @core.to_column([:member, :manager, :admin]).must_equal 7
+      @core.to_column([:admin, :finance]).must_equal 12
+      @core.to_column([]).must_equal 0
+      @core.to_column(nil).must_equal 0
+    end
+  end
+
+  describe '#input_options' do
+    it 'should return the input options by given bitwise map' do
+      @core.input_options.must_equal [
+        %w(Member member),
+        %w(Manager manager),
+        %w(Admin admin),
+        %w(Finance finance),
+        %w(Marketing marketing)
+      ]
+    end
+  end
+
+  describe '#valid?' do
+    it 'should check the given bitwise values are valid or not' do
+      @core.valid?(:member).must_equal true
+      @core.valid?(%w(admin member)).must_equal true
+      @core.valid?(nil).must_equal true
+      @core.valid?([]).must_equal true
+      @core.valid?(:invalid_role).must_equal false
+      @core.valid?('invalid_role').must_equal false
+      @core.valid?([:member, :invalid_role]).must_equal false
+    end
+  end
+
+  describe '#unify_bitwise' do
+    it 'should transfer given key to unified array' do
+      key = 'admin'
+      test_cases = {
+        :admin => [:admin],
+        'admin' => [:admin],
+        [:admin] => [:admin],
+        %w(admin member) => [:member, :admin],
+        [] => [],
+        nil => []
+      }
+      test_cases.each do |key, result|
+        @core.unify_bitwise(key).must_equal result
+      end
     end
   end
 end

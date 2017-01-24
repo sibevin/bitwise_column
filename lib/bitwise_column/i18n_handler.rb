@@ -3,8 +3,7 @@ require 'i18n'
 module BitwiseColumn
   class I18nHandler
     def initialize(klass, col_name)
-      # UserAdmin -> user_admin
-      @klass_name = klass.name.gsub(/(.)([A-Z])/, '\1_\2').downcase
+      @klass_name = klass.name.gsub(/(.)([A-Z])/, '\1_\2').downcase # UserAdmin -> user_admin
       @col_name = col_name
     end
 
@@ -19,7 +18,7 @@ module BitwiseColumn
           next
         end
       end
-      value.to_s.capitalize
+      value.to_s.split('_').map(&:capitalize).join(' ') # user_admin -> User Admin
     end
   end
 end

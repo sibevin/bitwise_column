@@ -1,63 +1,47 @@
 module BitwiseColumn
   class Core
-    def initialize(col_name:, bitwise_map:)
+    def initialize(col_name:, bitwise_map:, i18n_handler: nil)
       @map = bitwise_map
       @col_name = col_name.to_sym
+      @i18n_handler = i18n_handler
     end
 
     def col
       @col_name
     end
 
-    def append(target_klass, values)
-      values = symbolize(values)
-      bitwise_vals = read_col(target_klass)
-      if values.is_a?(Array)
-        bitwise_vals = (bitwise_vals + values)
-      else
-        bitwise_vals = (bitwise_vals << values.to_sym)
-      end
-      return_col_value(bitwise_vals, target_klass)
-    end
-
-    def assign(target_klass, values)
-      values = symbolize(values)
-      bitwise_vals = read_col(target_klass)
-      if values.nil?
-        bitwise_vals = []
-      elsif values.is_a?(Array)
-        bitwise_vals = values
-      else
-        bitwise_vals = [values.to_sym]
-      end
-      return_col_value(bitwise_vals, target_klass)
-    end
-
-    def have?(target_klass, values)
-      values = symbolize(values)
-      bitwise_vals = read_col(target_klass)
-      if values.is_a?(Array)
-        is_all_include = true
-        values.each do |v|
-          unless bitwise_vals.include?(v)
-            is_all_include = false
-            break
-          end
+    def have?(current_values, given_values)
+      current_values = unify_bitwise(current_values)
+      given_values = unify_bitwise(given_values)
+      is_all_included = true
+      given_values.each do |g_val|
+        unless current_values.include?(g_val)
+          is_all_included = false
+          break
         end
-        return is_all_include
-      else
-        return bitwise_vals.include?(values.to_sym)
       end
+      is_all_included
     end
 
-    def bitwise_value(target_klass)
-      read_col(target_klass)
+    def text(bitwise_vals)
+      bitwise_vals = unify_bitwise(bitwise_vals)
+      bitwise_vals.map { |v| @i18n_handler.translate(v) }
     end
 
-    def text(target_klass)
-      bitwise_vals = read_col(target_klass)
-      i18n_handler = BitwiseColumn::I18nHandler.new(target_klass, @col_name)
-      bitwise_vals.map { |v| i18n_handler.translate(v) }
+    def keys
+      @map.keys
+    end
+
+    def to_column(given_bitwise_val)
+      bitwise_to_col_value(unify_bitwise(given_bitwise_val))
+    end
+
+    def to_bitwise(given_col_val)
+      col_to_bitwise_value(given_col_val)
+    end
+
+    def mapping
+      @map
     end
 
     def input_options(opts = {})
@@ -67,34 +51,19 @@ module BitwiseColumn
                  fail ArgumentError, 'Options cannot have both :only and :except' if opts[:only] && opts[:except]
                  only = Array(opts[:only]).map(&:to_s)
                  except = Array(opts[:except]).map(&:to_s)
-                 @map.keys.reject do |value|
+                 @map.keys.select do |value|
                    if opts[:only]
-                     !only.include?(value)
+                     only.include?(value)
                    elsif opts[:except]
-                     except.include?(value)
+                     !except.include?(value)
                    end
                  end
       end
-      i18n_handler = BitwiseColumn::I18nHandler.new(target_klass, @col_name)
-      values.map { |v| [i18n_handler.translate(v), v.to_s] }
-    end
-
-    private
-
-    def get_col_value(target_klass)
-      target_klass.send(@col_name)
-    end
-
-    def symbolize(values)
-      return nil if values.nil?
-      values.is_a?(Array) ? values.map(&:to_sym) : values.to_sym
-    end
-
-    def normailize(bitwise_val)
-      bitwise_val.uniq.sort
+      values.map { |v| [@i18n_handler.translate(v), v.to_s] }
     end
 
     def valid?(bitwise_val)
+      bitwise_val = unify_bitwise(bitwise_val)
       is_valid = true
       bitwise_val.each do |bv|
         if @map[bv].nil?
@@ -103,11 +72,28 @@ module BitwiseColumn
         end
       end
       is_valid
-      # raise ArgumentError, 'Invalid bitwise value' unless is_valid
     end
 
-    def read_col(target_klass)
-      col_to_bitwise_value(get_col_value(target_klass))
+    def unify_bitwise(bitwise_val)
+      normailize(arrayize(symbolize(bitwise_val)))
+    end
+
+    private
+
+    def symbolize(bitwise_val)
+      return nil if bitwise_val.nil?
+      bitwise_val.is_a?(Array) ? bitwise_val.map(&:to_sym) : bitwise_val.to_sym
+    end
+
+    def normailize(bitwise_val)
+      bitwise_val = bitwise_val.uniq
+      invalid_col_value = @map.size + 1
+      bitwise_val.sort { |a, b| (@map[a] || invalid_col_value) <=> (@map[b] || invalid_col_value) }
+    end
+
+    def arrayize(bitwise_val)
+      return [] if bitwise_val.nil?
+      bitwise_val.is_a?(Array) ? bitwise_val : [bitwise_val.to_sym]
     end
 
     def col_to_bitwise_value(col_val)
@@ -126,15 +112,6 @@ module BitwiseColumn
         result |= 2**(@map[bv] - 1) if @map[bv]
       end
       result
-    end
-
-    def return_col_value(bitwise_val, target_klass)
-      bitwise_val = normailize(bitwise_val)
-      if valid?(bitwise_val)
-        return bitwise_to_col_value(bitwise_val)
-      else
-        return get_col_value(target_klass)
-      end
     end
   end
 end
