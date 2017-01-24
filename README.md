@@ -24,7 +24,7 @@ Or install it yourself as:
 
 First, add an integer column to your model with a migration:
 
-```
+```ruby
 class AddRoleToUsers < ActiveRecord::Migration
   def change
     add_column :users, :role, :integer
@@ -36,7 +36,7 @@ Although bitwise column treats nil as 0, but we suggest using 0 for consistence.
 
 Next, include BitwiseColumn module in your model and call bitwise_column to setup the bitwise mapping:
 
-```
+```ruby
 class User < ActiveRecord::Base
   include BitwiseColumn
   bitwise_column :role, {
@@ -49,7 +49,7 @@ end
 
 Then, you will have a virtual column `role_bitwise` to access the bitwise values:
 
-```
+```ruby
 user = User.new
 user.role # nil
 user.role_bitwise # []
@@ -99,7 +99,7 @@ user.role_bitwise # [:member, :admin]
 
 Beside, some class methods are also provided:
 
-```
+```ruby
 User.role_bitwise.to_bitwise(3) # [:member, :manager]
 User.role_bitwise.to_column(:admin) # 4
 User.role_bitwise.to_column([:member, :admin]) # 5
@@ -115,7 +115,7 @@ User.role_bitwise.input_options(except: [:member]) # [["Manager", "manager"], ["
 
 You can use bitwise column in a pure ruby class, just setup betwise_column as follows:
 
-```
+```ruby
 class Admin
   attr_accessor :role
 
@@ -136,7 +136,7 @@ Then you can use the bitwise column in your ruby object just like the above exam
 
 The i18n is supported by bitwise column, it would find the locales by symbols according to the following order:
 
-```
+```ruby
 bitwise_column.user.role.member
 activerecord.attributes.user.role/member
 activemodel.attributes.user.role/member
@@ -144,7 +144,7 @@ activemodel.attributes.user.role/member
 
 You can choose one of them to use. For example:
 
-```
+```ruby
 zh-TW:
   bitwise_column:
     user:
@@ -156,7 +156,7 @@ zh-TW:
 
 When locale files are ready, you can use `_bitwise_text` to display the translated text:
 
-```
+```ruby
 user.role_bitwise = :member
 user.role_bitwise_text # ["成員"]
 user.role_bitwise = [:member, :admin]
@@ -165,8 +165,8 @@ user.role_bitwise_text # ["成員", "系統管理員"]
 
 If the locale is given, the class method `input_options` would use the translated text:
 
-```
-User.bitwise_column.role.input_options # [["成員", "member"], ["管理人員", "manager"], ["最高管理員", "admin"]]
+```ruby
+User.bitwise_column.role.input_options # [["成員", "member"], ["管理人員", "manager"], ["系統管理員", "admin"]]
 ```
 
 ## Development
