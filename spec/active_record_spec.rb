@@ -2,14 +2,12 @@ require 'active_record'
 
 silence_warnings do
   ActiveRecord::Migration.verbose = false
-  ActiveRecord::Base.logger = Logger.new(nil)
   ActiveRecord::Base.establish_connection(adapter: 'sqlite3', database: ':memory:')
 end
 
 ActiveRecord::Base.connection.instance_eval do
   create_table :users do |t|
     t.integer :role, null: false, default: 0
-    t.integer :part, null: false, default: 0
   end
 end
 
@@ -23,13 +21,6 @@ class User < ActiveRecord::Base
     marketing: 5
   }
   bitwise_column :role, ROLES
-
-  PARTS = {
-    it: 1,
-    hr: 2,
-    mk: 3
-  }
-  bitwise_column :part, PARTS
 end
 
 describe BitwiseColumn do

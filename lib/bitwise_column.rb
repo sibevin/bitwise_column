@@ -1,6 +1,5 @@
 require 'bitwise_column/version'
 require 'bitwise_column/i18n_handler'
-require 'bitwise_column/null_i18n_handler'
 require 'bitwise_column/core'
 require 'bitwise_column/core_map'
 
@@ -10,12 +9,12 @@ module BitwiseColumn
   end
 
   module ClassMethods
-    def bitwise_column(col_name, bitwise_map)
+    def bitwise_column(col_name, bitwise_map, opts = {})
       unless bitwise_column_map.include?(col_name.to_sym)
         core = Core.new(
           col_name: col_name,
           bitwise_map: bitwise_map,
-          i18n_handler: I18nHandler.new(self, col_name)
+          i18n_handler: I18nHandler.new(self, col_name, opts)
         )
         bitwise_column_map << core
         define_singleton_method("#{col_name}_bitwise") do
