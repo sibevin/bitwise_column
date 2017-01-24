@@ -12,11 +12,10 @@ module BitwiseColumn
   module ClassMethods
     def bitwise_column(col_name, bitwise_map)
       unless bitwise_column_map.include?(col_name.to_sym)
-        i18n_handler = Object.const_defined?('I18n') ? I18nHandler : NullI18nHandler
         core = Core.new(
           col_name: col_name,
           bitwise_map: bitwise_map,
-          i18n_handler: i18n_handler.new(self, col_name)
+          i18n_handler: I18nHandler.new(self, col_name)
         )
         bitwise_column_map << core
         define_singleton_method("#{col_name}_bitwise") do

@@ -1,5 +1,4 @@
 require 'active_record'
-require 'logger'
 
 silence_warnings do
   ActiveRecord::Migration.verbose = false
@@ -41,8 +40,6 @@ describe BitwiseColumn do
       u.role.must_equal 29
       u.role_bitwise_append [:manager, 'admin']
       u.role.must_equal 31
-      u.part_bitwise_append [:hr]
-      u.part.must_equal 2
     end
 
     it 'should append a single value' do
