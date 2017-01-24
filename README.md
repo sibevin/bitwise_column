@@ -54,15 +54,17 @@ user = User.new
 p user.role # nil
 p user.role_bitwise # []
 
-# Assign bitwise values with the virtual column "role_bitwise", the role column is updated at the same time.
 user.role_bitwise = :member
 p user.role # 1
 p user.role_bitwise # [:member]
 user.role_bitwise = 'admin'
 p user.role # 4
 p user.role_bitwise # [:admin]
+```
 
-# You can use an array to assign bitwise values as well.
+You can use an array to assign bitwise values as well.
+
+```ruby
 user.role_bitwise = [:member, :manager]
 p user.role # 3
 p user.role_bitwise # [:member, :manger]
@@ -72,24 +74,33 @@ p user.role_bitwise # [:member, :admin]
 user.role_bitwise = []
 p user.role # 0
 p user.role_bitwise # []
+```
 
-# You can change the original integer column directly, the role_bitwise is updated at the same time.
+If you change the original integer column directly, the role_bitwise is updated at the same time.
+
+```ruby
 user.role = 7
 p user.role # 7
 p user.role_bitwise # [:member, :manager, :admin]
 user.role = 0
 p user.role # 0
 p user.role_bitwise # []
+```
 
-# Use _bitwise_have? to check the given keys are included or not.
+Use `_bitwise_have?` to check the given keys are included or not.
+
+```ruby
 user.role_bitwise = [:member, :manger]
 p user.role_bitwise_have?(:member) # true
 p user.role_bitwise_have?('manager') # true
 p user.role_bitwise_have?(:admin) # false
 p user.role_bitwise_have?(['manager', 'member']) # true
 p user.role_bitwise_have?([:member, :admin]) # false
+```
 
-# Use _bitwise_append to append keys to the original bitwise values.
+Use `_bitwise_append` to append keys to the original bitwise values.
+
+```ruby
 user.role_bitwise = []
 user.role_bitwise_append(:member)
 p user.role_bitwise # [:member]
@@ -130,11 +141,11 @@ class Admin
 end
 ```
 
-Then you can use the bitwise column in your ruby object just like the above examples.
+Then you can use the bitwise column in your ruby object just like above examples.
 
 ### I18n
 
-You can use bitwise column with i18n, it would find the locales by the lookup path according to the following order:
+You can use bitwise column with i18n, it will find locales according to the following lookup paths.
 
 ```ruby
 bitwise_column.user.role.member
@@ -166,7 +177,7 @@ class User < ActiveRecord::Base
   }, i18n_scope: ['my.role', 'app.role', 'role']
 end
 ```
-The locale lookup path will be changed to the following one:
+The locale lookup paths will be changed to the following ones:
 
 ```ruby
 my.role.member
@@ -177,7 +188,7 @@ activerecord.attributes.user.role/member
 activemodel.attributes.user.role/member
 ```
 
-When locale files are ready, you can use `_bitwise_text` to display the translated text:
+When locale files are ready, you can use `_bitwise_text` to display the translated text.
 
 ```ruby
 user.role_bitwise = :member
@@ -186,7 +197,7 @@ user.role_bitwise = [:member, :admin]
 p user.role_bitwise_text # ["成員", "系統管理員"]
 ```
 
-If the locale is given, the class method `input_options` would use the translated text:
+The class method `input_options` will use the translated text as well.
 
 ```ruby
 User.role_bitwise.input_options # [["成員", "member"], ["管理人員", "manager"], ["系統管理員", "admin"]]
