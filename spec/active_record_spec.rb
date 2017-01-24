@@ -184,5 +184,20 @@ describe BitwiseColumn do
         %w(Marketing marketing)
       ]
     end
+
+    it 'should return the input options which are selected with the "only" option' do
+      User.role_bitwise.input_options(only: [:admin, :marketing]).must_equal [
+        %w(Admin admin),
+        %w(Marketing marketing)
+      ]
+    end
+
+    it 'should return the input options which are filtered with the "except" option' do
+      User.role_bitwise.input_options(except: [:admin, :marketing]).must_equal [
+        %w(Member member),
+        %w(Manager manager),
+        %w(Finance finance)
+      ]
+    end
   end
 end

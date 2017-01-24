@@ -71,28 +71,4 @@ describe BitwiseColumn do
       a.role.must_equal 8
     end
   end
-
-  describe "#have?" do
-    it "should check a single value is included" do
-      a = Admin.new(role: 5) # [:admin, :member]
-      a.role_bitwise_have?(:admin).must_equal true
-      a.role_bitwise_have?(:manager).must_equal false
-    end
-
-    it "should check given values are all included" do
-      a = Admin.new(role: 13) # [:admin, :member, :finance]
-      a.role_bitwise_have?([:admin, :finance]).must_equal true
-      a.role_bitwise_have?([:manager, :admin]).must_equal false
-    end
-  end
-
-  describe "#role_bitwise" do
-    it "should return bitwise value" do
-      a = Admin.new
-      a.role = 7
-      a.role_bitwise.must_equal [:member, :manager, :admin]
-      a.role = 12
-      a.role_bitwise.must_equal [:admin, :finance]
-    end
-  end
 end

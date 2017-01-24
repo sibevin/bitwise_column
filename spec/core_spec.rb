@@ -91,20 +91,29 @@ describe BitwiseColumn::Core do
     end
   end
 
-  describe '#unify_bitwise' do
-    it 'should transfer given key to unified array' do
-      key = 'admin'
-      test_cases = {
-        :admin => [:admin],
-        'admin' => [:admin],
-        [:admin] => [:admin],
-        %w(admin member) => [:member, :admin],
-        [] => [],
-        nil => []
-      }
-      test_cases.each do |key, result|
-        @core.unify_bitwise(key).must_equal result
-      end
+  describe '#normalize' do
+    it 'should transfer a string key to an symbol array' do
+      @core.normalize('admin').must_equal [:admin]
+    end
+
+    it 'should transfer a single key to an array' do
+      @core.normalize(:admin).must_equal [:admin]
+    end
+
+    it 'should return an array with unique values' do
+      @core.normalize([:admin, :admin]).must_equal [:admin]
+    end
+
+    it 'should sort the given array by given mapping' do
+      @core.normalize([:admin, :member]).must_equal [:member, :admin]
+    end
+
+    it 'should return an empty array if nil is given' do
+      @core.normalize(nil).must_equal []
+    end
+
+    it 'should keep the invalid keys' do
+      @core.normalize([:admin, :invalid_role]).must_equal [:admin, :invalid_role]
     end
   end
 end

@@ -40,7 +40,7 @@ module BitwiseColumn
 
             define_method("#{col_name}_bitwise_append") do |values|
               ori_bitwise_val = send("#{col_name}_bitwise")
-              send("#{col_name}_bitwise=", ori_bitwise_val + core.unify_bitwise(values))
+              send("#{col_name}_bitwise=", ori_bitwise_val + core.normalize(values))
             end
 
             define_method("#{col_name}_bitwise_have?") do |values|

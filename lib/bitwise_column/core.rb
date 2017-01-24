@@ -11,8 +11,8 @@ module BitwiseColumn
     end
 
     def have?(current_values, given_values)
-      current_values = unify_bitwise(current_values)
-      given_values = unify_bitwise(given_values)
+      current_values = normalize(current_values)
+      given_values = normalize(given_values)
       is_all_included = true
       given_values.each do |g_val|
         unless current_values.include?(g_val)
@@ -24,7 +24,7 @@ module BitwiseColumn
     end
 
     def text(bitwise_vals)
-      bitwise_vals = unify_bitwise(bitwise_vals)
+      bitwise_vals = normalize(bitwise_vals)
       bitwise_vals.map { |v| @i18n_handler.translate(v) }
     end
 
@@ -33,7 +33,7 @@ module BitwiseColumn
     end
 
     def to_column(given_bitwise_val)
-      bitwise_to_col_value(unify_bitwise(given_bitwise_val))
+      bitwise_to_col_value(normalize(given_bitwise_val))
     end
 
     def to_bitwise(given_col_val)
@@ -49,21 +49,19 @@ module BitwiseColumn
                  @map.keys
                else
                  fail ArgumentError, 'Options cannot have both :only and :except' if opts[:only] && opts[:except]
-                 only = Array(opts[:only]).map(&:to_s)
-                 except = Array(opts[:except]).map(&:to_s)
-                 @map.keys.select do |value|
-                   if opts[:only]
-                     only.include?(value)
-                   elsif opts[:except]
-                     !except.include?(value)
-                   end
+                 if opts[:only]
+                   only = normalize(opts[:only])
+                   @map.keys.select { |k| only.include?(k) }
+                 elsif opts[:except]
+                   except = normalize(opts[:except])
+                   @map.keys.reject { |k| except.include?(k) }
                  end
       end
       values.map { |v| [@i18n_handler.translate(v), v.to_s] }
     end
 
     def valid?(bitwise_val)
-      bitwise_val = unify_bitwise(bitwise_val)
+      bitwise_val = normalize(bitwise_val)
       is_valid = true
       bitwise_val.each do |bv|
         if @map[bv].nil?
@@ -74,8 +72,8 @@ module BitwiseColumn
       is_valid
     end
 
-    def unify_bitwise(bitwise_val)
-      normailize(arrayize(symbolize(bitwise_val)))
+    def normalize(bitwise_val)
+      sort_by_map(unique(arrayize(symbolize(bitwise_val))))
     end
 
     private
@@ -85,15 +83,18 @@ module BitwiseColumn
       bitwise_val.is_a?(Array) ? bitwise_val.map(&:to_sym) : bitwise_val.to_sym
     end
 
-    def normailize(bitwise_val)
-      bitwise_val = bitwise_val.uniq
-      invalid_col_value = @map.size + 1
-      bitwise_val.sort { |a, b| (@map[a] || invalid_col_value) <=> (@map[b] || invalid_col_value) }
-    end
-
     def arrayize(bitwise_val)
       return [] if bitwise_val.nil?
       bitwise_val.is_a?(Array) ? bitwise_val : [bitwise_val.to_sym]
+    end
+
+    def unique(bitwise_val)
+      bitwise_val = bitwise_val.uniq
+    end
+
+    def sort_by_map(bitwise_val)
+      invalid_col_value = @map.size + 1
+      bitwise_val.sort { |a, b| (@map[a] || invalid_col_value) <=> (@map[b] || invalid_col_value) }
     end
 
     def col_to_bitwise_value(col_val)
