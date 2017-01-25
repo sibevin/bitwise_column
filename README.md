@@ -1,6 +1,71 @@
 # BitwiseColumn
 
-Using bitwise format to store multiple values in a single integer column.
+Using bitwise format to store multiple value combination in a single integer column.
+
+You may see the [What is bitwise?](#what-is-bitwise) first if you are not familiar with it.
+
+## What is bitwise?
+
+Let's take the user role for example. Suppose there are three kinds of roles - member, manager and admin. An user may have multiple roles at the same time, and we need to record this information. If we want to use a single integer column to store the role information for each users, we can change an integer to the bitwise format first and define each bit to represent the corresponding role as below:
+
+```
+member ----------.
+manager -------. |
+admin -------. | |
+             | | |
+             V V V
+             0 0 0 = bitwise format
+             3 2 1
+             ^ ^ ^
+             | | |
+             | | .---- the 1st lowest bit
+             | .------ the 2nd lowest bit
+             .-------- the 3rd lowest bit
+```
+
+Then we can store the integer value according to the bitwise result, for example:
+
+```
+.------------------------.----------------.---------------------------------------.
+| roles                  | bitwise result | integer value                         |
+.------------------------.----------------.---------------------------------------.
+| none                   | 0 0 0          | 0*2^2 + 0*2^1 + 0*2^0 = 0 + 0 + 0 = 0 |
+.------------------------.----------------.---------------------------------------.
+| member                 | 0 0 1          | 0*2^2 + 0*2^1 + 1*2^0 = 0 + 0 + 1 = 1 |
+.------------------------.----------------.---------------------------------------.
+| member, manager        | 0 1 1          | 0*2^2 + 1*2^1 + 1*2^0 = 0 + 2 + 1 = 3 |
+.------------------------.----------------.---------------------------------------.
+| member, admin          | 1 0 1          | 1*2^2 + 0*2^1 + 1*2^0 = 4 + 0 + 1 = 5 |
+.------------------------.----------------.---------------------------------------.
+| member, manager, admin | 1 1 1          | 1*2^2 + 1*2^1 + 1*2^0 = 4 + 2 + 1 = 7 |
+.------------------------.----------------.---------------------------------------.
+```
+
+## Why we use bitwise column?
+
+Let's take the user role for example again. There are many ways to achieve the requirement mentioned before:
+
+1. Use another Role model to store roles and build an many-to-many association between User and Role.
+2. Add an serialized column to User model and store an role array in it.
+3. Use bitwise to store the role information with a single integer column.
+
+If you need to add new roles or remove existing roles dynamically, the first solution is the best way to implement this feature. But if roles are pre-defined and seldom changed, use another table to store roles may reduce the database efficiency, especially when the role information is used very often.
+
+Use a serialized column to store role information is a solution to fix the efficiency problem. The serialized column allows us to store an array directly in the column, such as `['member', 'admin']`, but it brings other issues:
+
+* We need to create a text column for the serialized column. Handling text columns are much slower than integer ones in database.
+* It's very difficult to change a role's name if this role is already stored in many records.
+* We need use text search to query users who have particular roles.
+
+To avoid these issues, the bitwise column becomes a better solution compared with the serialized one. Because the bitwise column use an integer to store the data, we can use the bitwise operation provided by database to do queries. The problem is we need to handle the transaction between the bitwise and integer value. On the other hand, it is hard to understand what each bit means if we have no good way to record this information.
+
+This is the reason we use the `bitwise_column` gem, it provides the following features:
+
+1. It uses a mapping to name each bit. We can use these names directly, such as `user.role_bitwise = [:member, :admin]`, the corresponding integer value is calculated automatically.
+2. Both ActiveRecord and pure ruby object are supported.
+3. Support i18n.
+
+Please reference [Usage](#usage) to get more details about how it works.
 
 ## Installation
 
@@ -209,6 +274,12 @@ After checking out the repo, run `bin/setup` to install dependencies. Then, run 
 
 To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release` to create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 
+## Test
+
+Just run
+
+    ruby ./spec/all_spec.rb
+
 ## Contributing
 
 1. Fork it ( https://github.com/[my-github-username]/bitwise_column/fork )
@@ -216,3 +287,11 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
+
+## Authors
+
+Sibevin Wang
+
+## Copyright
+
+Copyright (c) 2017 Sibevin Wang. Released under the MIT license.
